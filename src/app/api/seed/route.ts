@@ -125,5 +125,30 @@ export async function POST() {
     ],
   })
 
+  // Seed checklist items
+  const now = new Date()
+  await db.checklistItem.createMany({
+    data: [
+      { weddingId: wid, title: 'Set wedding date', category: 'General', dueDate: new Date(now.getTime() - 86400000 * 60), completed: true },
+      { weddingId: wid, title: 'Book the venue', category: 'Venue', dueDate: new Date(now.getTime() - 86400000 * 45), completed: true },
+      { weddingId: wid, title: 'Hire photographer', category: 'Photography', dueDate: new Date(now.getTime() - 86400000 * 30), completed: true },
+      { weddingId: wid, title: 'Book catering service', category: 'Catering', dueDate: new Date(now.getTime() - 86400000 * 20), completed: true },
+      { weddingId: wid, title: 'Order wedding cake', category: 'Catering', dueDate: new Date(now.getTime() - 86400000 * 14), completed: true },
+      { weddingId: wid, title: 'Choose bridesmaid dresses', category: 'Attire', dueDate: new Date(now.getTime() - 86400000 * 10), completed: true },
+      { weddingId: wid, title: 'Book florist and arrange centerpieces', category: 'Decor', dueDate: new Date(now.getTime() - 86400000 * 7), completed: false },
+      { weddingId: wid, title: 'Finalize guest list', category: 'General', dueDate: new Date(now.getTime() - 86400000 * 5), completed: false },
+      { weddingId: wid, title: 'Send save-the-date cards', category: 'Stationery', dueDate: new Date(now.getTime() - 86400000 * 3), completed: false },
+      { weddingId: wid, title: 'Book transportation for wedding party', category: 'Transport', dueDate: new Date(now.getTime() + 86400000 * 3), completed: false },
+      { weddingId: wid, title: 'Final dress fitting', category: 'Attire', dueDate: new Date(now.getTime() + 86400000 * 7), completed: false },
+      { weddingId: wid, title: 'Book band or DJ for reception', category: 'Music', dueDate: new Date(now.getTime() + 86400000 * 10), completed: false },
+      { weddingId: wid, title: 'Plan rehearsal dinner menu', category: 'Catering', dueDate: new Date(now.getTime() + 86400000 * 14), completed: false },
+      { weddingId: wid, title: 'Create seating chart', category: 'Venue', dueDate: new Date(now.getTime() + 86400000 * 21), completed: false },
+      { weddingId: wid, title: 'Send formal invitations', category: 'Stationery', dueDate: new Date(now.getTime() + 86400000 * 30), completed: false },
+      { weddingId: wid, title: 'Final venue walkthrough', category: 'Venue', dueDate: new Date(now.getTime() + 86400000 * 60), completed: false },
+      { weddingId: wid, title: 'Apply for marriage license', category: 'General', dueDate: new Date(now.getTime() + 86400000 * 70), completed: false },
+      { weddingId: wid, title: 'Arrange honeymoon accommodations', category: 'General', dueDate: new Date(now.getTime() + 86400000 * 80), completed: false },
+    ],
+  })
+
   return NextResponse.json({ message: 'Database seeded successfully', weddingId: wid })
 }

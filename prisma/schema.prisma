@@ -30,6 +30,7 @@ model Wedding {
   messages  Message[]
   notifications Notification[]
   cards     Card[]
+  checklistItems ChecklistItem[]
 }
 
 model Pledge {
@@ -51,6 +52,7 @@ model BudgetCategory {
   name           String
   allocatedAmount Float
   spentAmount    Float    @default(0)
+  createdAt      DateTime @default(now())
   wedding        Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
 }
 
@@ -109,4 +111,15 @@ model Card {
   designData  String   @default("{}")
   createdAt   DateTime @default(now())
   wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+}
+
+model ChecklistItem {
+  id          String    @id @default(cuid())
+  weddingId   String
+  title       String
+  category    String    @default("General")
+  dueDate     DateTime?
+  completed   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  wedding     Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
 }

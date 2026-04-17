@@ -7,11 +7,16 @@ export async function PATCH(
 ) {
   const { id } = await params
   const body = await req.json()
-  const pledge = await db.pledge.update({
+  const item = await db.checklistItem.update({
     where: { id },
-    data: { status: body.status },
+    data: {
+      title: body.title,
+      category: body.category,
+      dueDate: body.dueDate ? new Date(body.dueDate) : (body.dueDate === null ? null : undefined),
+      completed: body.completed,
+    },
   })
-  return NextResponse.json(pledge)
+  return NextResponse.json(item)
 }
 
 export async function DELETE(
@@ -19,6 +24,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  await db.pledge.delete({ where: { id } })
+  await db.checklistItem.delete({ where: { id } })
   return NextResponse.json({ success: true })
 }

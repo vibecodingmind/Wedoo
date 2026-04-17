@@ -29,6 +29,11 @@ export default function Guests({ weddingId }: { weddingId: string }) {
 
   const refresh = () => setRefreshKey(k => k + 1)
 
+  const deleteGuest = async (id: string) => {
+    await fetch(`/api/guests/${id}`, { method: 'DELETE' })
+    refresh()
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     await fetch('/api/guests', {
@@ -100,6 +105,7 @@ export default function Guests({ weddingId }: { weddingId: string }) {
                 <th className="px-4 py-3 text-left font-medium">RSVP</th>
                 <th className="hidden sm:table-cell px-4 py-3 text-left font-medium">Table</th>
                 <th className="px-4 py-3 text-left font-medium">+1</th>
+                <th className="px-4 py-3 text-left font-medium w-10"></th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -122,6 +128,11 @@ export default function Guests({ weddingId }: { weddingId: string }) {
                   </td>
                   <td className="hidden sm:table-cell px-4 py-3">{guest.tableNumber || '-'}</td>
                   <td className="px-4 py-3">{guest.plusOne ? 'Yes' : 'No'}</td>
+                  <td className="px-4 py-3">
+                    <button onClick={() => deleteGuest(guest.id)} className="rounded p-1 text-muted-foreground hover:bg-red-100 hover:text-red-600 transition-colors">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -17,3 +17,12 @@ export async function PATCH(
   })
   return NextResponse.json(item)
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  await db.budgetCategory.delete({ where: { id } })
+  return NextResponse.json({ success: true })
+}

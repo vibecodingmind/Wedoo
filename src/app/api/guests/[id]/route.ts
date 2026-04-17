@@ -15,9 +15,18 @@ export async function PATCH(
       phone: body.phone,
       dietaryRestriction: body.dietaryRestriction,
       rsvpStatus: body.rsvpStatus,
-      tableNumber: body.tableNumber,
+      tableNumber: body.tableNumber !== undefined ? parseInt(body.tableNumber) : undefined,
       plusOne: body.plusOne,
     },
   })
   return NextResponse.json(guest)
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  await db.guest.delete({ where: { id } })
+  return NextResponse.json({ success: true })
 }
