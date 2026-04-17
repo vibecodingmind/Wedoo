@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wedoo - Comprehensive Project Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  @page {
+    size: 794px 1123px;
+    margin: 0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 794px;
+    height: 1123px;
+    background: #f1f1ef;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Layer 0: Base */
+  .cover-base {
+    position: absolute;
+    inset: 0;
+    background: #f1f1ef;
+    z-index: 0;
+  }
+
+  /* Layer 1: Background Grid */
+  .cover-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 1;
+  }
+  .grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(88, 80, 55, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(88, 80, 55, 0.04) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  /* Layer 2: Structure */
+  .cover-structure {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+  .anchor-line {
+    position: absolute;
+    left: 0.12 * 794px;
+    top: 0.10 * 1123px;
+    bottom: 0.10 * 1123px;
+    width: 6px;
+    background: #585037;
+    border-radius: 3px;
+  }
+  .meta-line {
+    position: absolute;
+    left: 95.28px + 30px;
+    top: 0.76 * 1123px;
+    width: 0.38 * 794px;
+    height: 1px;
+    background: rgba(88, 80, 55, 0.4);
+  }
+  .corner-accent {
+    position: absolute;
+    right: 0.08 * 794px;
+    bottom: 0.08 * 1123px;
+    width: 40px;
+    height: 40px;
+    border-left: 2px solid rgba(88, 80, 55, 0.25);
+    border-bottom: 2px solid rgba(88, 80, 55, 0.25);
+  }
+  .corner-accent-top {
+    position: absolute;
+    right: 0.08 * 794px;
+    top: 0.08 * 1123px;
+    width: 40px;
+    height: 40px;
+    border-left: 2px solid rgba(88, 80, 55, 0.25);
+    border-top: 2px solid rgba(88, 80, 55, 0.25);
+  }
+
+  /* Layer 3: Content */
+  .cover-content {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+  }
+  .kicker {
+    position: absolute;
+    left: 95.28px + 30px;
+    top: 0.14 * 1123px;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #86847c;
+    opacity: 0.7;
+  }
+  .hero-title {
+    position: absolute;
+    left: 95.28px + 30px;
+    top: 0.25 * 1123px;
+    font-family: 'Playfair Display', serif;
+    font-size: 62px;
+    font-weight: 900;
+    line-height: 1.1;
+    color: #181816;
+    max-width: 60%;
+    letter-spacing: -1px;
+  }
+  .hero-accent {
+    color: #562cd6;
+  }
+  .summary-block {
+    position: absolute;
+    left: 95.28px + 30px;
+    top: 0.48 * 1123px;
+    font-size: 16px;
+    font-weight: 300;
+    line-height: 1.7;
+    color: #585037;
+    max-width: 58%;
+    opacity: 0.85;
+  }
+  .meta-block {
+    position: absolute;
+    left: 95.28px + 30px;
+    top: 0.78 * 1123px;
+    font-size: 15px;
+    font-weight: 400;
+    color: #86847c;
+    line-height: 2.0;
+  }
+  .meta-block span {
+    display: block;
+  }
+  .footer-line {
+    position: absolute;
+    left: 95.28px + 30px;
+    bottom: 0.06 * 1123px;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #86847c;
+    opacity: 0.5;
+  }
+</style>
+</head>
+<body>
+  <!-- Layer 0 -->
+  <div class="cover-base"></div>
+
+  <!-- Layer 1: Background -->
+  <div class="cover-bg">
+    <div class="grid-overlay"></div>
+  </div>
+
+  <!-- Layer 2: Structure -->
+  <div class="cover-structure">
+    <div class="anchor-line"></div>
+    <div class="meta-line"></div>
+    <div class="corner-accent"></div>
+    <div class="corner-accent-top"></div>
+  </div>
+
+  <!-- Layer 3: Content -->
+  <div class="cover-content">
+    <div class="kicker">Comprehensive Project Plan &middot; 2026</div>
+    <div class="hero-title">Wedoo<br><span class="hero-accent">Wedding</span> Planner</div>
+    <div class="summary-block">
+      A world-class, full-stack wedding planning platform designed to revolutionize how couples plan their special day. From pledge management and intelligent budgeting to real-time messaging, beautiful card creation, and seamless vendor coordination &mdash; Wedoo delivers an all-in-one experience at enterprise scale.
+    </div>
+    <div class="meta-block">
+      <span>Version 1.0 &mdash; Strategic Blueprint</span>
+      <span>April 2026 &mdash; Confidential</span>
+    </div>
+    <div class="footer-line">Prepared for Executive Review</div>
+  </div>
+</body>
+</html>
