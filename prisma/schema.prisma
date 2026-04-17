@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Wedding {
+  id        String   @id @default(cuid())
+  name      String
+  date      DateTime
+  budget    Float
+  status    String   @default("PLANNING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  pledges   Pledge[]
+  budgetItems BudgetCategory[]
+  guests    Guest[]
+  messages  Message[]
+  notifications Notification[]
+  cards     Card[]
+}
+
+model Pledge {
+  id              String   @id @default(cuid())
+  weddingId       String
+  contributorName String
+  contributorEmail String
+  amount          Float
+  category        String
+  status          String   @default("PENDING")
+  message         String?
+  createdAt       DateTime @default(now())
+  wedding         Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+}
+
+model BudgetCategory {
+  id             String   @id @default(cuid())
+  weddingId      String
+  name           String
+  allocatedAmount Float
+  spentAmount    Float    @default(0)
+  wedding        Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+}
+
+model Guest {
+  id               String   @id @default(cuid())
+  weddingId        String
+  name             String
+  email            String?
+  phone            String?
+  dietaryRestriction String?
+  rsvpStatus       String   @default("PENDING")
+  tableNumber      Int?
+  plusOne          Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  wedding          Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+}
+
+model Vendor {
+  id          String  @id @default(cuid())
+  name        String
+  category    String
+  description String
+  priceRange  String
+  rating      Float   @default(0)
+  contactEmail String?
+  website     String?
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  weddingId   String
+  channelName String
+  senderName  String
+  content     String
+  createdAt   DateTime @default(now())
+  wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  weddingId   String
+  title       String
+  message     String
+  type        String   @default("INFO")
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+}
+
+model Card {
+  id          String   @id @default(cuid())
+  weddingId   String
+  type        String
+  title       String
+  subtitle    String?
+  designData  String   @default("{}")
+  createdAt   DateTime @default(now())
+  wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+}
