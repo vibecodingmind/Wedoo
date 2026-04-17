@@ -19,6 +19,7 @@ export default function Settings({ wedding }: { wedding: Wedding }) {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [exportToast, setExportToast] = useState<string | null>(null)
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -183,6 +184,45 @@ export default function Settings({ wedding }: { wedding: Wedding }) {
               <button onClick={handleDeleteAllData} className="flex-1 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600">Yes, Reset Everything</button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Export Reports */}
+      <div className="rounded-xl border bg-card p-6">
+        <h3 className="text-lg font-semibold">Export Reports</h3>
+        <p className="mt-1 text-sm text-muted-foreground">Download printable reports for your wedding planning</p>
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[
+            { type: 'guests', label: 'Guest List', icon: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75', color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/30' },
+            { type: 'budget', label: 'Budget Report', icon: 'M21 12V7H5a2 2 0 0 1 0-4h14v4M3 5v14a2 2 0 0 0 2 2h16v-5', color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30' },
+            { type: 'checklist', label: 'Checklist', icon: 'M9 11l3 3L22 4M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z', color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/30' },
+            { type: 'full', label: 'Full Report', icon: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6', color: 'text-rose-600 bg-rose-50 dark:bg-rose-950/30' },
+          ].map(item => (
+            <button
+              key={item.type}
+              onClick={() => {
+                window.open(`/api/export-pdf?weddingId=${wedding.id}&type=${item.type}`, '_blank')
+                setExportToast(`${item.label} exported!`)
+                setTimeout(() => setExportToast(null), 3000)
+              }}
+              className="flex items-center gap-3 rounded-lg border p-3 text-left text-sm font-medium hover:bg-muted transition-colors"
+            >
+              <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${item.color}`}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={item.icon} /></svg>
+              </div>
+              <div>
+                <div className="font-medium">{item.label}</div>
+                <div className="text-xs text-muted-foreground">Print / Save as PDF</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {exportToast && (
+        <div className="fixed top-4 right-4 z-[100] animate-in fade-in slide-in-from-top-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-medium text-white shadow-lg flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          {exportToast}
         </div>
       )}
 

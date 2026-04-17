@@ -16,9 +16,12 @@ import Assistant from '@/components/wedoo/assistant'
 import Gallery from '@/components/wedoo/gallery'
 import Seating from '@/components/wedoo/seating'
 import Timeline from '@/components/wedoo/timeline'
+import PwaInstall from '@/components/wedoo/pwa-install'
+import EmailSettings from '@/components/wedoo/email-settings'
+import Profile from '@/components/wedoo/profile'
 
 interface Wedding { id: string; name: string; date: string; budget: number; status: string }
-interface Pledge { id: string; amount: number; status: string; contributorName: string; category: string; createdAt: string }
+interface Pledge { id: string; weddingId: string; amount: number; status: string; contributorName: string; category: string; createdAt: string }
 interface BudgetItem { id: string; name: string; allocatedAmount: number; spentAmount: number }
 interface Guest { id: string; rsvpStatus: string; name: string }
 interface Notification { id: string; title: string; message: string; type: string; read: boolean; createdAt: string }
@@ -36,7 +39,9 @@ const NAV_ITEMS = [
   { id: 'vendors', label: 'Vendors', icon: 'm2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M2 7h20' },
   { id: 'gallery', label: 'Gallery', icon: 'M2.25 15.75l5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21z' },
   { id: 'assistant', label: 'AI Assistant', icon: 'M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z' },
+  { id: 'profile', label: 'Profile', icon: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z' },
   { id: 'notifications', label: 'Alerts', icon: 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0' },
+  { id: 'email-settings', label: 'Email Setup', icon: 'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z' },
   { id: 'settings', label: 'Settings', icon: 'M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z' },
 ]
 
@@ -91,7 +96,7 @@ export default function Home() {
 
   const handleExport = (type: string) => {
     if (!wedding) return
-    window.open(`/api/export?weddingId=${wedding.id}&type=${type}`, '_blank')
+    window.open(`/api/export-pdf?weddingId=${wedding.id}&type=${type}`, '_blank')
     showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} report exported!`)
   }
 
@@ -120,7 +125,9 @@ export default function Home() {
       case 'vendors': return <Vendors />
       case 'gallery': return <Gallery weddingId={wedding.id} />
       case 'assistant': return <Assistant weddingId={wedding.id} weddingBudget={wedding.budget} guestCount={guests.length} weddingDate={wedding.date} />
+      case 'profile': return <Profile />
       case 'notifications': return <Notifications weddingId={wedding.id} />
+      case 'email-settings': return <EmailSettings weddingId={wedding.id} />
       case 'settings': return <Settings wedding={wedding} />
       default: return null
     }
@@ -128,6 +135,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-200">
+      <PwaInstall />
       {/* Toast */}
       {toast && (
         <div className="fixed top-4 right-4 z-[100] animate-in fade-in slide-in-from-top-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-medium text-white shadow-lg flex items-center gap-2">

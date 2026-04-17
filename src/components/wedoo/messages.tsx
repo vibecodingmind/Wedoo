@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { format } from 'date-fns'
 
 interface Message { id: string; channelName: string; senderName: string; content: string; createdAt: string }
@@ -21,7 +21,12 @@ export default function Messages({ weddingId }: { weddingId: string }) {
   const [loading, setLoading] = useState(true)
   const [channel, setChannel] = useState('General')
   const [input, setInput] = useState('')
+  const [connected, setConnected] = useState(false)
+  const [typing, setTyping] = useState(false)
+  const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set())
   const bottomRef = useRef<HTMLDivElement>(null)
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const eventSourceRef = useRef<EventSource | null>(null)
 
   const [refreshKey, setRefreshKey] = useState(0)
 
@@ -30,16 +35,106 @@ export default function Messages({ weddingId }: { weddingId: string }) {
     const fetchData = async () => {
       const res = await fetch(`/api/messages?weddingId=${weddingId}&channel=${channel}`)
       const data = await res.json()
-      if (!cancelled) { setMessages(data); setLoading(false); setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100) }
+      if (!cancelled) {
+        setMessages(data)
+        setLoading(false)
+        setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
+      }
     }
     fetchData()
     return () => { cancelled = true }
   }, [weddingId, channel, refreshKey])
 
+  // SSE connection
+  useEffect(() => {
+    let es: EventSource | null = null
+
+    const connect = () => {
+      const lastTs = messages.length > 0
+        ? new Date(Math.max(...messages.map(m => new Date(m.createdAt).getTime()))).toISOString()
+        : new Date(0).toISOString()
+
+      es = new EventSource(`/api/messages/stream?weddingId=${weddingId}&channelName=${channel}&lastTimestamp=${encodeURIComponent(lastTs)}`)
+      eventSourceRef.current = es
+
+      es.onopen = () => setConnected(true)
+
+      es.addEventListener('connected', () => setConnected(true))
+
+      es.addEventListener('messages', (event) => {
+        try {
+          const parsed = JSON.parse(event.data)
+          if (parsed.messages && Array.isArray(parsed.messages)) {
+            setMessages(prev => {
+              const existingIds = new Set(prev.map(m => m.id))
+              const newMsgs = parsed.messages.filter((m: Message) => !existingIds.has(m.id))
+              if (newMsgs.length > 0) {
+                const newIds: string[] = newMsgs.map((m: Message) => m.id)
+                setNewMessageIds(prev => {
+                  const next = new Set(prev)
+                  newIds.forEach(id => next.add(id))
+                  return next
+                })
+                setTimeout(() => {
+                  setNewMessageIds(prev => {
+                    const next = new Set(prev)
+                    newIds.forEach(id => next.delete(id))
+                    return next
+                  })
+                }, 1000)
+                return [...prev, ...newMsgs]
+              }
+              return prev
+            })
+          }
+        } catch {
+          // Ignore parse errors
+        }
+      })
+
+      es.addEventListener('timeout', () => {
+        setConnected(false)
+        es?.close()
+        // Auto-reconnect
+        setTimeout(connect, 1000)
+      })
+
+      es.onerror = () => {
+        setConnected(false)
+        es?.close()
+        // Auto-reconnect after 2 seconds
+        setTimeout(connect, 2000)
+      }
+    }
+
+    connect()
+
+    return () => {
+      es?.close()
+      setConnected(false)
+    }
+  }, [weddingId, channel, messages.length])
+
+  // Auto-scroll to bottom on new messages
+  useEffect(() => {
+    if (messages.length > 0) {
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
+    }
+  }, [messages.length])
+
   const refresh = () => setRefreshKey(k => k + 1)
+
+  const handleInputChange = useCallback((value: string) => {
+    setInput(value)
+    setTyping(true)
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
+    typingTimeoutRef.current = setTimeout(() => setTyping(false), 2000)
+  }, [])
 
   const send = async () => {
     if (!input.trim()) return
+    setTyping(false)
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
     await fetch('/api/messages', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ weddingId, channelName: channel, senderName: 'You', content: input })
@@ -84,6 +179,23 @@ export default function Messages({ weddingId }: { weddingId: string }) {
           </div>
           <h3 className="font-semibold">{channel}</h3>
           <span className="text-xs text-muted-foreground">{messages.length} messages</span>
+          {/* Live indicator */}
+          <div className="ml-auto flex items-center gap-1.5">
+            {connected ? (
+              <>
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                </span>
+                <span className="text-xs font-medium text-emerald-600">Live</span>
+              </>
+            ) : (
+              <>
+                <span className="h-2 w-2 rounded-full bg-amber-400" />
+                <span className="text-xs font-medium text-amber-600">Reconnecting</span>
+              </>
+            )}
+          </div>
         </div>
 
         <div className="flex-1 space-y-3 overflow-y-auto p-4">
@@ -93,7 +205,7 @@ export default function Messages({ weddingId }: { weddingId: string }) {
             <p className="py-10 text-center text-muted-foreground">No messages yet. Start the conversation!</p>
           ) : (
             messages.map(msg => (
-              <div key={msg.id} className={`flex gap-3 ${msg.senderName === 'You' ? 'flex-row-reverse' : ''}`}>
+              <div key={msg.id} className={`flex gap-3 ${msg.senderName === 'You' ? 'flex-row-reverse' : ''} ${newMessageIds.has(msg.id) ? 'animate-in slide-in-from-bottom-2 fade-in duration-300' : ''}`}>
                 <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                   msg.senderName === 'You' ? 'bg-rose-500 text-white' : 'bg-muted text-muted-foreground'
                 }`}>{msg.senderName.charAt(0)}</div>
@@ -112,10 +224,24 @@ export default function Messages({ weddingId }: { weddingId: string }) {
           <div ref={bottomRef} />
         </div>
 
+        {/* Typing indicator */}
+        {typing && (
+          <div className="px-4 pb-1">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex gap-0.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:0ms]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:150ms]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:300ms]" />
+              </div>
+              You are typing...
+            </div>
+          </div>
+        )}
+
         {/* Input */}
         <div className="border-t p-4">
           <div className="flex gap-2">
-            <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()}
+            <input value={input} onChange={e => handleInputChange(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()}
               className="flex-1 rounded-xl border bg-background px-4 py-2.5 text-sm" placeholder={`Message #${channel}...`} />
             <button onClick={send} className="rounded-xl bg-rose-500 px-4 py-2.5 text-white hover:bg-rose-600">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m22 2-7 20-4-9-9-4z"/><path d="m22 2-11 11"/></svg>

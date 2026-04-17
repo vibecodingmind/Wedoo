@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 
   if (type === 'checklist') {
     const items = await db.checklistItem.findMany({ where: { weddingId }, orderBy: [{ completed: 'asc' }, { category: 'asc' }] })
-    const html = buildChecklistHtml(wedding.name, items)
+    const html = buildChecklistHtml(wedding.name, items.map(i => ({ title: i.title, category: i.category, dueDate: i.dueDate ? i.dueDate.toISOString() : null, completed: i.completed })))
     return new Response(html, { headers: { 'Content-Type': 'text/html', 'Content-Disposition': `attachment; filename="Checklist.html"` } })
   }
 

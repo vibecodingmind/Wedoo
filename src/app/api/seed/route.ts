@@ -10,6 +10,16 @@ export async function POST() {
     return NextResponse.json({ message: 'Data already seeded' })
   }
 
+  // Create demo user
+  const user = await db.user.create({
+    data: {
+      email: 'sarah@wedoo.com',
+      name: 'Sarah Thompson',
+      avatar: null,
+      role: 'COUPLE',
+    },
+  })
+
   const wedding = await db.wedding.create({
     data: {
       name: 'Sarah & James',
@@ -20,6 +30,15 @@ export async function POST() {
   })
 
   const wid = wedding.id
+
+  // Create wedding member link
+  await db.weddingMember.create({
+    data: {
+      weddingId: wid,
+      userId: user.id,
+      role: 'COUPLE',
+    },
+  })
 
   await db.pledge.createMany({
     data: [
@@ -129,26 +148,54 @@ export async function POST() {
   const now = new Date()
   await db.checklistItem.createMany({
     data: [
-      { weddingId: wid, title: 'Set wedding date', category: 'General', dueDate: new Date(now.getTime() - 86400000 * 60), completed: true },
-      { weddingId: wid, title: 'Book the venue', category: 'Venue', dueDate: new Date(now.getTime() - 86400000 * 45), completed: true },
-      { weddingId: wid, title: 'Hire photographer', category: 'Photography', dueDate: new Date(now.getTime() - 86400000 * 30), completed: true },
-      { weddingId: wid, title: 'Book catering service', category: 'Catering', dueDate: new Date(now.getTime() - 86400000 * 20), completed: true },
-      { weddingId: wid, title: 'Order wedding cake', category: 'Catering', dueDate: new Date(now.getTime() - 86400000 * 14), completed: true },
-      { weddingId: wid, title: 'Choose bridesmaid dresses', category: 'Attire', dueDate: new Date(now.getTime() - 86400000 * 10), completed: true },
-      { weddingId: wid, title: 'Book florist and arrange centerpieces', category: 'Decor', dueDate: new Date(now.getTime() - 86400000 * 7), completed: false },
-      { weddingId: wid, title: 'Finalize guest list', category: 'General', dueDate: new Date(now.getTime() - 86400000 * 5), completed: false },
-      { weddingId: wid, title: 'Send save-the-date cards', category: 'Stationery', dueDate: new Date(now.getTime() - 86400000 * 3), completed: false },
-      { weddingId: wid, title: 'Book transportation for wedding party', category: 'Transport', dueDate: new Date(now.getTime() + 86400000 * 3), completed: false },
-      { weddingId: wid, title: 'Final dress fitting', category: 'Attire', dueDate: new Date(now.getTime() + 86400000 * 7), completed: false },
-      { weddingId: wid, title: 'Book band or DJ for reception', category: 'Music', dueDate: new Date(now.getTime() + 86400000 * 10), completed: false },
-      { weddingId: wid, title: 'Plan rehearsal dinner menu', category: 'Catering', dueDate: new Date(now.getTime() + 86400000 * 14), completed: false },
-      { weddingId: wid, title: 'Create seating chart', category: 'Venue', dueDate: new Date(now.getTime() + 86400000 * 21), completed: false },
-      { weddingId: wid, title: 'Send formal invitations', category: 'Stationery', dueDate: new Date(now.getTime() + 86400000 * 30), completed: false },
-      { weddingId: wid, title: 'Final venue walkthrough', category: 'Venue', dueDate: new Date(now.getTime() + 86400000 * 60), completed: false },
-      { weddingId: wid, title: 'Apply for marriage license', category: 'General', dueDate: new Date(now.getTime() + 86400000 * 70), completed: false },
-      { weddingId: wid, title: 'Arrange honeymoon accommodations', category: 'General', dueDate: new Date(now.getTime() + 86400000 * 80), completed: false },
+      { weddingId: wid, title: 'Set wedding date', category: 'General', dueDate: new Date(now.getTime() - 86400000 * 60), completed: true, order: 0 },
+      { weddingId: wid, title: 'Book the venue', category: 'Venue', dueDate: new Date(now.getTime() - 86400000 * 45), completed: true, order: 1 },
+      { weddingId: wid, title: 'Hire photographer', category: 'Photography', dueDate: new Date(now.getTime() - 86400000 * 30), completed: true, order: 2 },
+      { weddingId: wid, title: 'Book catering service', category: 'Catering', dueDate: new Date(now.getTime() - 86400000 * 20), completed: true, order: 3 },
+      { weddingId: wid, title: 'Order wedding cake', category: 'Catering', dueDate: new Date(now.getTime() - 86400000 * 14), completed: true, order: 4 },
+      { weddingId: wid, title: 'Choose bridesmaid dresses', category: 'Attire', dueDate: new Date(now.getTime() - 86400000 * 10), completed: true, order: 5 },
+      { weddingId: wid, title: 'Book florist and arrange centerpieces', category: 'Decor', dueDate: new Date(now.getTime() - 86400000 * 7), completed: false, order: 6 },
+      { weddingId: wid, title: 'Finalize guest list', category: 'General', dueDate: new Date(now.getTime() - 86400000 * 5), completed: false, order: 7 },
+      { weddingId: wid, title: 'Send save-the-date cards', category: 'Stationery', dueDate: new Date(now.getTime() - 86400000 * 3), completed: false, order: 8 },
+      { weddingId: wid, title: 'Book transportation for wedding party', category: 'Transport', dueDate: new Date(now.getTime() + 86400000 * 3), completed: false, order: 9 },
+      { weddingId: wid, title: 'Final dress fitting', category: 'Attire', dueDate: new Date(now.getTime() + 86400000 * 7), completed: false, order: 10 },
+      { weddingId: wid, title: 'Book band or DJ for reception', category: 'Music', dueDate: new Date(now.getTime() + 86400000 * 10), completed: false, order: 11 },
+      { weddingId: wid, title: 'Plan rehearsal dinner menu', category: 'Catering', dueDate: new Date(now.getTime() + 86400000 * 14), completed: false, order: 12 },
+      { weddingId: wid, title: 'Create seating chart', category: 'Venue', dueDate: new Date(now.getTime() + 86400000 * 21), completed: false, order: 13 },
+      { weddingId: wid, title: 'Send formal invitations', category: 'Stationery', dueDate: new Date(now.getTime() + 86400000 * 30), completed: false, order: 14 },
+      { weddingId: wid, title: 'Final venue walkthrough', category: 'Venue', dueDate: new Date(now.getTime() + 86400000 * 60), completed: false, order: 15 },
+      { weddingId: wid, title: 'Apply for marriage license', category: 'General', dueDate: new Date(now.getTime() + 86400000 * 70), completed: false, order: 16 },
+      { weddingId: wid, title: 'Arrange honeymoon accommodations', category: 'General', dueDate: new Date(now.getTime() + 86400000 * 80), completed: false, order: 17 },
     ],
   })
 
-  return NextResponse.json({ message: 'Database seeded successfully', weddingId: wid })
+  // Seed timeline events
+  await db.timelineEvent.createMany({
+    data: [
+      { weddingId: wid, time: '14:00', title: 'Wedding Ceremony', description: 'Exchange of vows and rings in the garden pavilion', category: 'ceremony', sortOrder: 0 },
+      { weddingId: wid, time: '15:00', title: 'Cocktail Hour', description: 'Welcome drinks and hors d\'oeuvres on the terrace', category: 'reception', sortOrder: 1 },
+      { weddingId: wid, time: '16:00', title: 'Grand Entrance', description: 'Bride and groom announced into the ballroom', category: 'reception', sortOrder: 2 },
+      { weddingId: wid, time: '16:15', title: 'First Dance', description: 'Bride and groom\'s first dance as a married couple', category: 'reception', sortOrder: 3 },
+      { weddingId: wid, time: '16:30', title: 'Toasts', description: 'Best man and maid of honor speeches', category: 'reception', sortOrder: 4 },
+      { weddingId: wid, time: '17:00', title: 'Dinner', description: 'Plated three-course dinner service begins', category: 'reception', sortOrder: 5 },
+      { weddingId: wid, time: '18:30', title: 'Cake Cutting', description: 'Wedding cake cutting and dessert service', category: 'reception', sortOrder: 6 },
+      { weddingId: wid, time: '19:00', title: 'Bouquet Toss', description: 'Traditional bouquet toss for all single guests', category: 'reception', sortOrder: 7 },
+      { weddingId: wid, time: '19:30', title: 'Open Dance', description: 'Dance floor opens to all guests with DJ Nova', category: 'reception', sortOrder: 8 },
+      { weddingId: wid, time: '22:00', title: 'Sparkler Send-Off', description: 'Grand exit through a sparkler tunnel', category: 'ceremony', sortOrder: 9 },
+    ],
+  })
+
+  // Seed photos (using placeholder gradient colors)
+  await db.photo.createMany({
+    data: [
+      { weddingId: wid, src: 'linear-gradient(135deg, #fce4ec 0%, #f8bbd0 50%, #f48fb1 100%)', caption: 'The Grand Estate - our dream venue with beautiful gardens', category: 'Venue' },
+      { weddingId: wid, src: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 50%, #a5d6a7 100%)', caption: 'Garden ceremony setup with natural floral arch', category: 'Decor' },
+      { weddingId: wid, src: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 50%, #ffcc80 100%)', caption: 'Bridal gown and groom\'s tuxedo hanging ready', category: 'Attire' },
+      { weddingId: wid, src: 'linear-gradient(135deg, #fce4ec 0%, #f3e5f5 50%, #e1bee7 100%)', caption: 'Tasting menu preview from Golden Fork Catering', category: 'Food' },
+      { weddingId: wid, src: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #90caf9 100%)', caption: 'Color palette inspiration board - blush and gold', category: 'Inspiration' },
+      { weddingId: wid, src: 'linear-gradient(135deg, #fbe9e7 0%, #ffccbc 50%, #ffab91 100%)', caption: 'Table centerpiece concept with candles and greenery', category: 'Decor' },
+    ],
+  })
+
+  return NextResponse.json({ message: 'Database seeded successfully', weddingId: wid, userId: user.id })
 }

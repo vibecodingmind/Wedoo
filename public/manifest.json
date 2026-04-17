@@ -1,7 +1,7 @@
 {
   "name": "Wedoo - Wedding Planner",
   "short_name": "Wedoo",
-  "description": "Plan your perfect wedding with Wedoo",
+  "description": "Plan your perfect wedding",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -9,14 +9,9 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
     }
   ]
 }

@@ -16,36 +16,42 @@ interface ChatMessage {
   timestamp: Date
 }
 
-/* ---------- Pre-written AI responses ---------- */
+/* ---------- Quick actions ---------- */
 const QUICK_ACTIONS = [
   {
     label: 'Budget Tips',
     icon: 'M21 12V7H5a2 2 0 0 1 0-4h14v4M3 5v14a2 2 0 0 0 2 2h16v-5M18 12a2 2 0 0 0 0 4h4v-4Z',
     key: 'budget',
+    prompt: 'Give me detailed budget planning tips for my wedding. Include recommended allocations, cost-saving strategies, and priority areas.',
   },
   {
     label: 'Vendor Help',
     icon: 'm2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M2 7h20',
     key: 'vendor',
+    prompt: 'Help me choose and manage wedding vendors. What should I look for, what questions should I ask, and what is the booking priority?',
   },
   {
     label: 'Timeline',
     icon: 'M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z',
     key: 'timeline',
+    prompt: 'Give me a comprehensive wedding planning timeline. What should I do and when, based on my wedding date?',
   },
   {
     label: 'Decoration Ideas',
     icon: 'M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z',
     key: 'decoration',
+    prompt: 'What are the best wedding decoration ideas and themes? Include current trends and budget-friendly options.',
   },
   {
     label: 'Guest Management',
     icon: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
     key: 'guest',
+    prompt: 'Help me manage my wedding guests. Include RSVP tracking, seating strategy, and communication tips.',
   },
 ]
 
-function getResponseForKey(key: string, budget: number, guests: number, date: string): string {
+/* ---------- Fallback responses if API fails ---------- */
+function getFallbackResponse(key: string, budget: number, guests: number, date: string): string {
   const budgetFormatted = budget.toLocaleString()
   const daysLeft = Math.max(0, Math.ceil((new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
 
@@ -53,48 +59,23 @@ function getResponseForKey(key: string, budget: number, guests: number, date: st
     budget: `Here's a smart budget breakdown for your wedding with a $${budgetFormatted} budget:
 
 **Recommended Allocation:**
-• **Venue & Catering** — 45-50% ($${Math.round(budget * 0.47).toLocaleString()})
-  This is your biggest expense. Consider off-peak dates or weekday weddings for significant savings.
-• **Photography & Videography** — 10-12% ($${Math.round(budget * 0.11).toLocaleString()})
+- **Venue & Catering** — 45-50% ($${Math.round(budget * 0.47).toLocaleString()})
+  This is your biggest expense. Consider off-peak dates for significant savings.
+- **Photography & Videography** — 10-12% ($${Math.round(budget * 0.11).toLocaleString()})
   Book early! Top photographers get reserved 12-18 months in advance.
-• **Flowers & Decor** — 8-10% ($${Math.round(budget * 0.09).toLocaleString()})
+- **Flowers & Decor** — 8-10% ($${Math.round(budget * 0.09).toLocaleString()})
   Mix high-impact statement pieces with affordable greenery and candles.
-• **Music & Entertainment** — 5-8% ($${Math.round(budget * 0.065).toLocaleString()})
-  A great DJ can be more cost-effective than a live band.
-• **Attire & Beauty** — 8-10% ($${Math.round(budget * 0.09).toLocaleString()})
-  Look for sample sales and trunk shows for designer gowns at discounts.
-• **Stationery & Favors** — 2-3% ($${Math.round(budget * 0.025).toLocaleString()})
-  Digital save-the-dates save on postage. DIY favors add a personal touch.
-• **Miscellaneous & Buffer** — 10-15% ($${Math.round(budget * 0.125).toLocaleString()})
-  Always keep a contingency fund for unexpected costs!
+- **Music & Entertainment** — 5-8% ($${Math.round(budget * 0.065).toLocaleString()})
+- **Attire & Beauty** — 8-10% ($${Math.round(budget * 0.09).toLocaleString()})
+- **Stationery & Favors** — 2-3% ($${Math.round(budget * 0.025).toLocaleString()})
+- **Miscellaneous & Buffer** — 10-15% ($${Math.round(budget * 0.125).toLocaleString()})
 
-💡 **Pro Tips:**
+**Pro Tips:**
 - Track every expense in your Wedoo budget tool
 - Negotiate packages — vendors often bundle services at 10-20% off
 - Consider a Sunday wedding for 15-30% venue savings`,
 
     vendor: `Here's your complete guide to choosing the perfect wedding vendors:
-
-**How to Choose Vendors Like a Pro:**
-
-🔍 **Research & Shortlist**
-- Start with 3-5 options per vendor category
-- Check reviews on The Knot, WeddingWire, and Google
-- Ask for referrals from recently married friends
-- Look at full wedding galleries, not just highlight reels
-
-💬 **Questions to Ask Every Vendor:**
-- "What's included in your base package?"
-- "Are there any additional fees (travel, overtime, setup)?"
-- "What happens if you're unavailable on our date?"
-- "Can we see a full portfolio of a similar wedding?"
-- "What's your payment schedule and cancellation policy?"
-
-⚠️ **Red Flags to Watch For:**
-- No written contract or vague terms
-- Reluctance to provide references
-- Pressure to sign immediately without review
-- Significant price changes after initial quote
 
 **Vendor Booking Priority:**
 1. **Venue** (12-18 months out)
@@ -103,397 +84,87 @@ function getResponseForKey(key: string, budget: number, guests: number, date: st
 4. **Florist & DJ/Band** (6-8 months)
 5. **Cake, officiant, rentals** (4-6 months)
 
-💡 **Pro Tips:**
-- Use Wedoo's vendor directory to compare options
-- Book early — popular vendors fill up fast!
-- Build relationships — vendors can recommend each other`,
+**Questions to Ask Every Vendor:**
+- "What's included in your base package?"
+- "Are there any additional fees (travel, overtime, setup)?"
+- "Can we see a full portfolio of a similar wedding?"
+- "What's your payment schedule and cancellation policy?"
 
-    timeline: `Here's your comprehensive 12-month wedding planning timeline:
+**Red Flags to Watch For:**
+- No written contract or vague terms
+- Reluctance to provide references
+- Pressure to sign immediately`,
 
-${daysLeft > 365 ? `You have ${daysLeft} days — perfect timing! Here's your roadmap:` : `Your wedding is in ${daysLeft} days. Here's a prioritized checklist based on where you are:`}
+    timeline: `Here's your wedding planning timeline:
 
-**📅 12+ Months Before**
-- Set your budget and create a shared spreadsheet
-- Choose your wedding date (check venue availability first!)
-- Start a guest list draft
-- Research and book your venue
-- Begin photographer/ videographer search
-- Hire a wedding planner (if desired)
+${daysLeft > 365 ? `You have ${daysLeft} days — perfect timing!` : `Your wedding is in ${daysLeft} days. Here's your roadmap:`}
 
-**📅 9-11 Months Before**
-- Book your caterer and photographer
-- Choose your wedding party
-- Start dress shopping
-- Book entertainment (DJ/ band)
-- Select an officiant
-
-**📅 6-8 Months Before**
-- Book florist, rental companies, and transportation
-- Order your wedding dress
-- Plan the honeymoon
-- Register for gifts
-- Send save-the-dates
-- Start planning decor themes
-
-**📅 4-5 Months Before**
-- Book hair and makeup artists
-- Order the cake
-- Plan rehearsal dinner
-- Schedule engagement photos
-- Select groomsmen attire
-
-**📅 2-3 Months Before**
-- Send invitations (8 weeks before)
-- Finalize menu tastings
-- Write vows
-- Plan seating chart
-- Order wedding favors
-- Apply for marriage license
-
-**📅 1 Month Before**
-- Confirm all vendor details
-- Have your final dress fitting
-- Create a day-of timeline
-- Break in your wedding shoes
-- Assign day-of responsibilities
-
-**📅 Final Week**
-- Confirm final guest count with caterer
-- Prepare tips and payments for vendors
-- Pack for your honeymoon
-- Relax and enjoy your big day! 💍`,
+**12+ Months Before:** Set budget, choose date, research venues, start guest list
+**9-11 Months:** Book photographer & caterer, choose wedding party, start dress shopping
+**6-8 Months:** Book florist & rentals, order dress, plan honeymoon, send save-the-dates
+**4-5 Months:** Book hair/makeup, order cake, plan rehearsal dinner
+**2-3 Months:** Send invitations, finalize menu, write vows, plan seating
+**1 Month:** Confirm all vendors, final dress fitting, create day-of timeline
+**Final Week:** Confirm guest count, prepare tips, relax and enjoy!`,
 
     decoration: `Here are stunning decoration ideas for your wedding:
 
-**🌸 Popular Wedding Themes for ${new Date().getFullYear()}:**
+**Popular Wedding Themes:**
 
-**1. Garden Romance** 🌿
-- Lush greenery garlands on tables and arches
-- Wildflower centerpieces in mismatched vintage vases
-- Soft pastel palette: blush, sage, cream, dusty rose
-- Fairy lights woven through greenery
-- Pampas grass accents
+1. **Garden Romance** — Lush greenery garlands, wildflower centerpieces, fairy lights
+2. **Modern Minimalist** — Clean white and gold, geometric arch, single bloom arrangements
+3. **Bohemian Elegance** — Macramé backdrops, terracotta tones, dried flowers, brass lanterns
+4. **Rustic Chic** — Wooden barrels, mason jars, burlap runners, chalkboard signs
+5. **Glamorous Evening** — Sequin linens, crystal chandeliers, metallic accents
 
-**2. Modern Minimalist** ✨
-- Clean white and gold color scheme
-- Geometric arch or acrylic signage
-- Single statement bloom arrangements
-- Candles at varying heights
-- Linen napkins with subtle textures
-
-**3. Bohemian Elegance** 🪶
-- Macramé backdrops and table runners
-- Terracotta and earthy tones with dried flowers
-- Brass candle holders and lanterns
-- Rattan furniture and woven rugs
-- Crystal suncatchers for light play
-
-**4. Rustic Chic** 🪵
-- Wooden barrels and crates for displays
-- Mason jar centerpieces with LED lights
-- Burlap and lace table runners
-- Chalkboard signs for seating and menus
-- Wildflower bouquets tied with twine
-
-**5. Glamorous Evening** 💎
-- Sequin tablecloths and velvet linens
-- Crystal chandeliers or hanging installations
-- Metallic accents: gold, rose gold, or silver
-- Uplighting to transform the venue
-- Mirrored surfaces for visual depth
-
-**Budget-Friendly Decor Tips:**
+**Budget-Friendly Tips:**
 - Repurpose ceremony flowers for the reception
 - Candles create ambiance for less than $2 each
-- Use greenery as your base — it's cheaper than flowers
-- Rent statement pieces instead of buying
+- Use greenery as your base — cheaper than flowers
 - DIY your signage and place cards`,
 
-    guest: `Here's your complete guide to managing ${guests} wedding guests:
-
-**📋 Guest Management Strategy:**
+    guest: `Here's your guest management guide for ${guests} guests:
 
 **Creating Your Guest List:**
-- Start with your "must-invite" list (family & closest friends)
+- Start with "must-invite" list (family & closest friends)
 - Set clear rules for plus-ones and children
 - Use the 80/20 rule: expect 80% acceptance rate
-- Create A, B, and C tiers for your list
-- Account for vendor meal counts (+5% buffer)
 
-**RSVP Tracking Best Practices:**
-- Set a firm RSVP deadline (6-8 weeks before)
-- Use digital RSVPs for easier tracking (Wedoo handles this!)
-- Follow up on non-responders within 1 week of deadline
-- Track dietary restrictions and allergies early
-- Update your caterer with final numbers promptly
+**RSVP Tracking:**
+- Set a firm deadline (6-8 weeks before)
+- Use digital RSVPs for easier tracking
+- Follow up on non-responders within 1 week
+- Track dietary restrictions early
 
 **Seating Strategy:**
 - Seat families together
-- Mix social groups at tables (introduce friends to each other!)
+- Mix social groups at tables
 - Place the dance floor near younger guests
-- Have a "reserved" sign system
-- Create a kids' table with activities if needed
 
-**Managing Difficult Situations:**
-- Be clear about your +1 policy on invitations
-- Have a plan for unexpected RSVPs
-- Address dietary needs with your caterer in advance
-- Consider a "no children" policy with a clear, kind message
-- Have a quiet exit plan for guests who need to leave early
-
-**Communication Tips:**
-- Send save-the-dates 6-8 months out
-- Include your wedding website on all correspondence
-- Provide hotel block information early
-- Share a weekend itinerary for traveling guests
-- Send a welcome bag with local recommendations
-
-💡 **With ${guests} guests, expect roughly ${Math.round(guests * 0.8)} to attend based on average acceptance rates. Plan your seating for this number!**`,
+**With ${guests} guests, expect roughly ${Math.round(guests * 0.8)} to attend!**`,
   }
 
   return responses[key] || responses.budget
 }
 
-function getKeywordResponse(input: string, budget: number, guests: number, date: string): string {
-  const lower = input.toLowerCase()
+function getDefaultFallback(budget: number, guests: number, date: string): string {
   const budgetFormatted = budget.toLocaleString()
   const daysLeft = Math.max(0, Math.ceil((new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-
-  if (/cake|dessert|sweet|bake/i.test(lower)) {
-    return `🍰 Great question about your wedding cake! Here's everything you need to know:
-
-**Choosing Your Wedding Cake:**
-
-**Popular Trends:**
-- **Naked or semi-naked cakes** — rustic, modern, and Instagram-worthy
-- **Buttercream finishes** — smooth, elegant, and more affordable than fondant
-- **Mini cakes or cupcakes** — fun alternatives to a traditional tiered cake
-- **Donut towers** — trendy and budget-friendly for ${guests} guests
-- **Cheese wheel cakes** — perfect for foodie couples!
-
-**Budget Guidance (from your $${budgetFormatted} budget):**
-- Allocate 1-3% of your budget for cake ($${Math.round(budget * 0.02).toLocaleString()})
-- Per-slice pricing ranges from $3-$15+ depending on design complexity
-- For ${guests} guests, you'll need roughly ${Math.round(guests * 1.2)} servings
-
-**Pro Tips:**
-- Schedule your cake tasting 4-6 months before the wedding
-- Ask about additional fees for delivery, setup, and cake cutting
-- Fresh flowers on cake are usually provided by your florist
-- Consider a "display" cake and a sheet cake for guests — saves 40%!
-- Save the top tier for your first anniversary`
-  }
-
-  if (/music|dj|band|entertain|song|dance|playlist/i.test(lower)) {
-    return `🎵 Here's your complete wedding music and entertainment guide:
-
-**Music Options Compared:**
-
-**🎧 DJ (Most Popular)**
-- **Cost:** $800-$2,500
-- **Pros:** Vast music library, smooth transitions, takes requests
-- **Best for:** Couples who want variety and dancing all night
-
-**🎸 Live Band**
-- **Cost:** $2,000-$10,000+
-- **Pros:** Unique energy, interactive performance
-- **Best for:** Couples who want a concert-like experience
-
-**🎻 String Quartet/Classical**
-- **Cost:** $1,000-$3,000
-- **Pros:** Elegant, sophisticated ambiance
-- **Best for:** Ceremony and cocktail hour
-
-**Must-Have Playlist Moments:**
-- Processional & recessional songs
-- First dance
-- Father-daughter / mother-son dance
-- Last song of the night
-- Hora loca or crowd favorites for dancing
-
-**Pro Tips:**
-- Provide a "Do Not Play" list alongside your must-play songs
-- For ${guests} guests, ensure your venue's sound system covers the space
-- Book 6-8 months in advance — popular dates fill fast
-- Consider a live vocalist during cocktail hour and DJ for the reception`
-  }
-
-  if (/flower|florist|floral|decor|centerpiece|bouquet|arrangement|greenery/i.test(lower)) {
-    return `💐 Here's your complete wedding flowers and decor guide:
-
-**Flower Planning for ${guests} Guests:**
-
-**Essential Floral Elements:**
-- Bridal bouquet ($150-$400)
-- Bridesmaid bouquets ($75-$150 each)
-- Boutonnieres ($10-$25 each)
-- Centerpieces ($50-$200 per table)
-- Ceremony arch/installation ($500-$3,000)
-- Flower girl petals & basket ($30-$80)
-
-**Smart Ways to Save on Flowers:**
-- Choose **in-season blooms** — peonies in spring, dahlias in fall
-- Use **greenery-heavy** arrangements (eucalyptus, ferns, ivy)
-- Repurpose ceremony flowers for the reception
-- Mix high-end blooms with affordable fillers
-- Consider **dried flowers** for a trendy, budget-friendly option
-
-**Popular Flower Palettes:**
-- 🤍 **Classic White:** Roses, peonies, lilies, ranunculus
-- 🌸 **Romantic Pink:** Garden roses, peonies, sweet peas
-- 🧡 **Warm Autumn:** Dahlias, sunflowers, berries, burnt orange
-- 💜 **Moody Luxe:** Burgundy roses, deep purple, dark foliage
-
-**Pro Tips:**
-- Meet with your florist 8-10 months before
-- Bring photos of styles you love
-- Consider candles + greenery for cost-effective table decor
-- Ask about rental items (vases, arches) vs. purchasing`
-  }
-
-  if (/photo|photog|video|videog|camera|shoot|portrait|album/i.test(lower)) {
-    return `📸 Here's your complete wedding photography guide:
-
-**Photography Options:**
-
-**📷 What to Look For in a Photographer:**
-- Strong portfolio with full wedding galleries
-- Shooting style that matches your vision
-- Reviews from couples with similar wedding sizes
-- Clear contract with deliverables and timeline
-- Second shooter included or available
-
-**Essential Shot List:**
-- Getting ready (bride & groom separately)
-- First look (if doing one)
-- Ceremony key moments
-- Family formals (make a list of groupings!)
-- Wedding party portraits
-- Couple portraits during golden hour
-- Reception details (cake, decor, rings)
-- Candid moments throughout the day
-- First dance, toasts, cake cutting, bouquet toss
-
-**Photography Packages:**
-- **Essential (6 hours):** $2,000-$4,000
-- **Standard (8 hours):** $3,500-$7,000
-- **Premium (10+ hours + video):** $6,000-$15,000
-
-**💡 Pro Tips:**
-- Book your photographer 10-12 months in advance
-- Create a Pinterest board of styles you love
-- Hire a second shooter for complete coverage with ${guests} guests
-- Consider an engagement session (included in most packages)
-- Plan your timeline around golden hour for stunning portraits`
-  }
-
-  if (/venue|location|place|space|outdoor|indoor|garden|beach|ballroom/i.test(lower)) {
-    return `🏛️ Here's your guide to choosing the perfect wedding venue:
-
-**Venue Categories:**
-
-**🏡 Indoor Venues**
-- Ballrooms, hotels, banquet halls, historic estates
-- Climate-controlled, reliable, elegant
-- Usually include tables, chairs, and catering
-
-**🌿 Outdoor Venues**
-- Gardens, vineyards, beaches, parks
-- Stunning natural backdrops, romantic atmosphere
-- Always have a weather backup plan!
-
-**🏨 All-Inclusive Venues**
-- Hotels, resorts, country clubs
-- One-stop planning with built-in vendors
-- Often offer guest room blocks
-
-**Key Questions to Ask:**
-- What's the guest capacity and minimum count?
-- What's included (tables, chairs, linens, lighting)?
-- Are there noise restrictions or curfews?
-- What are the catering and bar policies?
-- Is there a backup plan for outdoor ceremonies?
-- What are the setup and breakdown timelines?
-
-**Budget Tips:**
-- Friday and Sunday weddings can save 20-40%
-- Off-season months (Jan-Mar) offer significant discounts
-- All-inclusive venues simplify budgeting
-- Consider non-traditional venues like restaurants or art galleries`
-  }
-
-  if (/dress|gown|attire|suit|tux|wedding dress|bridal/i.test(lower)) {
-    return `👗 Here's your wedding attire guide:
-
-**For the Bride:**
-- Start shopping 9-12 months before
-- Bring only 2-3 people to appointments
-- Try on different silhouettes (A-line, mermaid, ball gown, sheath)
-- Consider the venue and formality level
-- Budget: $1,000-$5,000+ (sample sales can save 50%!)
-
-**For the Groom/Partner:**
-- Coordinate with the bride's dress style
-- Start 4-6 months before
-- Consider renting vs. buying
-- Budget: $200-$1,500+ for suit/tuxedo
-
-**Don't Forget:**
-- Shoes, veil/headpiece, jewelry
-- Alterations (factor in $300-$800)
-- Emergency kit for the day of
-- Steam/press services
-
-**Timeline Tips:**
-- Final fitting 2-3 weeks before the wedding
-- Break in your shoes before the big day
-- Assign someone to handle your dress post-ceremony`
-  }
-
-  if (/honeymoon|travel|trip|vacation|destination/i.test(lower)) {
-    return `✈️ Here's your honeymoon planning guide:
-
-**Popular Honeymoon Destinations:**
-- 🏖️ **Tropical:** Maldives, Bora Bora, Hawaii, Bali
-- 🏰 **European:** Italy, Greece, France, Spain
-- 🏔️ **Adventure:** New Zealand, Costa Rica, Iceland
-- 🌃 **City Break:** Paris, Tokyo, New York
-
-**Planning Timeline:**
-- Research destinations 6-8 months before
-- Book flights and accommodation 4-6 months out
-- Apply for passports/visas 3-4 months before
-- Plan activities and tours 2-3 months before
-
-**Budget Tips:**
-- Use your wedding date as leverage for upgrades
-- Consider an off-peak honeymoon (saves 20-40%)
-- All-inclusive resorts simplify budgeting
-- Register for a honeymoon fund as a gift option`
-  }
-
-  // Default response
-  return `Thanks for your question! Here's some general wedding planning advice for your upcoming celebration:
+  return `Thanks for your question! Here's some general wedding planning advice:
 
 **Your Wedding at a Glance:**
-- 💰 Budget: $${budgetFormatted}
-- 👥 Expected Guests: ~${guests}
-- 📅 Days Until Wedding: ${daysLeft}
+- Budget: $${budgetFormatted}
+- Expected Guests: ~${guests}
+- Days Until Wedding: ${daysLeft}
 
 **Top Planning Priorities:**
-1. **Lock in your venue** — this is the biggest decision and books out fastest
-2. **Book your photographer early** — the best ones get reserved 12+ months out
-3. **Set up your budget tracking** — use Wedoo's budget tool to stay on track
-4. **Start your guest list** — knowing your headcount affects venue, catering, and budget decisions
-5. **Choose your wedding party** — they'll be your support team throughout the planning process
+1. Lock in your venue
+2. Book your photographer early
+3. Set up budget tracking
+4. Start your guest list
+5. Choose your wedding party
 
-**Quick Tips:**
-- Join Wedoo's community for real couple advice
-- Set milestone reminders for key planning deadlines
-- Don't forget to enjoy the process — it goes fast!
-- Consider hiring a day-of coordinator for peace of mind
-
-Is there something specific you'd like to dive deeper into? Try the quick action buttons below for detailed guides! 💕`
+Try the quick action buttons below for detailed guides!`
 }
 
 /* ---------- Component ---------- */
@@ -516,46 +187,109 @@ export default function Assistant({ weddingId, weddingBudget, guestCount, weddin
     scrollToBottom()
   }, [messages, isTyping, scrollToBottom])
 
-  const simulateTypingAndRespond = useCallback((userContent: string, responseContent: string) => {
+  const callAssistantAPI = useCallback(async (message: string): Promise<string> => {
+    try {
+      const res = await fetch('/api/assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message,
+          weddingId,
+          weddingBudget,
+          guestCount,
+          weddingDate,
+        }),
+      })
+      if (!res.ok) throw new Error('API error')
+      const data = await res.json()
+      return data.content || getDefaultFallback(weddingBudget, guestCount, weddingDate)
+    } catch {
+      // Fallback to local responses if API fails
+      const lower = message.toLowerCase()
+      for (const action of QUICK_ACTIONS) {
+        if (lower.includes(action.key)) {
+          return getFallbackResponse(action.key, weddingBudget, guestCount, weddingDate)
+        }
+      }
+      return getDefaultFallback(weddingBudget, guestCount, weddingDate)
+    }
+  }, [weddingId, weddingBudget, guestCount, weddingDate])
+
+  const handleQuickAction = useCallback(async (key: string) => {
+    const action = QUICK_ACTIONS.find(a => a.key === key)
+    if (!action || isTyping) return
+
+    setHasInteracted(true)
     const userMsg: ChatMessage = {
       id: crypto.randomUUID(),
       role: 'user',
-      content: userContent,
+      content: action.label,
       timestamp: new Date(),
     }
     setMessages(prev => [...prev, userMsg])
     setIsTyping(true)
-    setInputValue('')
 
-    const typingDelay = 800 + Math.random() * 1200
-
-    setTimeout(() => {
+    try {
+      const response = await callAssistantAPI(action.prompt)
       setIsTyping(false)
       const aiMsg: ChatMessage = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: responseContent,
+        content: response,
         timestamp: new Date(),
       }
       setMessages(prev => [...prev, aiMsg])
-    }, typingDelay)
-  }, [])
+    } catch {
+      setIsTyping(false)
+      const fallback = getFallbackResponse(key, weddingBudget, guestCount, weddingDate)
+      const aiMsg: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: fallback,
+        timestamp: new Date(),
+      }
+      setMessages(prev => [...prev, aiMsg])
+    }
+  }, [isTyping, weddingBudget, guestCount, weddingDate, callAssistantAPI])
 
-  const handleQuickAction = useCallback((key: string) => {
-    const action = QUICK_ACTIONS.find(a => a.key === key)
-    if (!action) return
-    setHasInteracted(true)
-    const response = getResponseForKey(key, weddingBudget, guestCount, weddingDate)
-    simulateTypingAndRespond(action.label, response)
-  }, [weddingBudget, guestCount, weddingDate, simulateTypingAndRespond])
-
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback(async () => {
     const trimmed = inputValue.trim()
     if (!trimmed || isTyping) return
+
     setHasInteracted(true)
-    const response = getKeywordResponse(trimmed, weddingBudget, guestCount, weddingDate)
-    simulateTypingAndRespond(trimmed, response)
-  }, [inputValue, isTyping, weddingBudget, guestCount, weddingDate, simulateTypingAndRespond])
+    setInputValue('')
+
+    const userMsg: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: trimmed,
+      timestamp: new Date(),
+    }
+    setMessages(prev => [...prev, userMsg])
+    setIsTyping(true)
+
+    try {
+      const response = await callAssistantAPI(trimmed)
+      setIsTyping(false)
+      const aiMsg: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: response,
+        timestamp: new Date(),
+      }
+      setMessages(prev => [...prev, aiMsg])
+    } catch {
+      setIsTyping(false)
+      const fallback = getDefaultFallback(weddingBudget, guestCount, weddingDate)
+      const aiMsg: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: fallback,
+        timestamp: new Date(),
+      }
+      setMessages(prev => [...prev, aiMsg])
+    }
+  }, [inputValue, isTyping, weddingBudget, guestCount, weddingDate, callAssistantAPI])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
