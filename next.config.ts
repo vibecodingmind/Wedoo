@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
+  // Railway sets PORT env variable
+  serverExternalPackages: ['sharp'],
 };
 
 export default nextConfig;
